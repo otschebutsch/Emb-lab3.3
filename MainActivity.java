@@ -49,7 +49,16 @@ public class MainActivity extends AppCompatActivity {
         yValue = Integer.parseInt(yInput.getText().toString());
         mutation = Double.parseDouble(radioButton1.getText().toString());
         hideKeyboard();
-        showToast(countGen());
+
+        int[] result = new int[5];
+        for (int i = 10; i <= 100; i += 10) {
+            int[] a = countGen(i);
+            if ( i == 10 || a[0] < result[0]) {
+                result = a;
+            }
+        }
+        showToast("Number of iterations = " + result[0] + "\n" +
+                aValue + "*" + result[1] + " + " + bValue + "*" + result[2] + " + " + cValue + "*" + result[3] + " + " + dValue + "*" + result[4] + " = " + yValue);
     }
 
     private void showToast(String text) {
@@ -66,10 +75,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String countGen() {
+    private int[] countGen(int size) {
+        int count = 0;
         Random rand = new Random();
         ArrayList<ArrayList<Integer>> popList = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < size; i++) {
             ArrayList<Integer> tmp = new ArrayList<>(4);
             for (int j = 0; j < 4; j++) {
                 tmp.add(rand.nextInt(yValue / 2));
@@ -77,29 +87,29 @@ public class MainActivity extends AppCompatActivity {
             popList.add(tmp);
         }
         do {
+            count++;
             double sum = 0;
-            int[] delta = new int[5];
-            for (int i = 0; i < 5; i++) {
+            int[] delta = new int[size];
+            for (int i = 0; i < size; i++) {
                 delta[i] = Math.abs(yValue - popList.get(i).get(0) * aValue - popList.get(i).get(1) * bValue - popList.get(i).get(2) * cValue - popList.get(i).get(3) * dValue);
                 if (delta[i] == 0) {
-                    return "x1 = " + popList.get(i).get(0) + "\nx2 = " + popList.get(i).get(1) + "\nx3 = " + popList.get(i).get(2) + "\nx4 = " + popList.get(i).get(3) +
-                            "\n\nEquation: " + aValue + " * " + popList.get(i).get(0) + " + " + bValue + " * " + popList.get(i).get(1) + " + " + cValue + " * " + popList.get(i).get(2) + " + " + dValue + " * " + popList.get(i).get(3) + " = " + yValue;
-                }
+                    return new int[]{count, popList.get(i).get(0), popList.get(i).get(1), popList.get(i).get(2), popList.get(i).get(3)};
+            }
                 sum += 1.0 / delta[i];
             }
-            double[] percentParent = new double[5];
-            for (int i = 0; i < 5; i++) {
+            double[] percentParent = new double[size];
+            for (int i = 0; i < size; i++) {
                 percentParent[i] = 1.0 / (delta[i] * sum) * 100;
             }
-            double[] child = new double[6];
+            double[] child = new double[size + 1];
             child[0] = 0;
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < size - 1; i++) {
                 child[i + 1] = child[i] + percentParent[i];
             }
-            child[4] = 100;
+            child[size - 1] = 100;
             ArrayList<ArrayList<Integer>> parentList = new ArrayList<>();
             int parent;
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < size * 2; i++) {
                 parent = rand.nextInt(100);
                 for (int j = 0; j < child.length - 1; j++) {
                     if (child[j] <= parent && child[j + 1] > parent) {
@@ -121,9 +131,9 @@ public class MainActivity extends AppCompatActivity {
             }
             parentList.clear();
             if (Math.random() < mutation) {
-                int change = rand.nextInt(5);
+                int change = rand.nextInt(size);
                 for (int i = 0; i < change; i++) {
-                    popList.get(rand.nextInt(5)).set(rand.nextInt(4),
+                    popList.get(rand.nextInt(size)).set(rand.nextInt(4),
                             rand.nextInt(yValue / 2));
                 }
             }
